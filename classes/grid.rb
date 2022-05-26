@@ -1,3 +1,4 @@
+require "chunky_png"
 require_relative "cell"
 
 class Grid
@@ -80,5 +81,7 @@ class Grid
         end
         output
     end
+
+    def to_png(cell_size: 10)
 
 end
