@@ -1,4 +1,5 @@
 require "chunky_png"
+require "victor"
 require_relative "cell"
 
 class Grid
@@ -82,6 +83,52 @@ class Grid
         output
     end
 
+    def background_color_for(cell) 
+        nil
+    end
+    
     def to_png(cell_size: 10)
+        img_width = cell_size * columns
+        img_height = cell_size * rows;
+
+        background = ChunkyPNG::Color::BLACK
+        wall = ChunkyPNG::Color.from_hex('#70e000')
+
+        img = ChunkyPNG::Image.new(img_width + 1, img_height + 1, background)
+
+        each_cell do |cell|
+            x1 = cell.column * cell_size
+            y1 = cell.row * cell_size
+
+            x2 = (cell.column + 1) * cell_size
+            y2 = (cell.row + 1) * cell_size
+
+            img.line(x1, y1, x2, y1, wall) unless cell.north 
+            img.line(x1, y1, x1, y2, wall) unless cell.west
+
+            img.line(x2, y1, x2, y2, wall) unless cell.linked?(cell.east)
+            img.line(x1, y2, x2, y2, wall) unless cell.linked?(cell.south)
+        end
+        img
+    end
+
+    def to_svg(cell_size: 10)
+        svg = Victor::SVG.new width: 500, height: 300, viewBox: "0 0 500 300", background: "black"
+        
+        each_cell do |cell|
+            x1 = cell.column * cell_size
+            y1 = cell.row * cell_size
+
+            x2 = (cell.column + 1) * cell_size
+            y2 = (cell.row + 1) * cell_size
+
+            svg.line x1: x1, y1: y1, x2: x2, y2: y1, stroke: "#70e000" unless cell.north
+            svg.line x1: x1, y1: y1, x2: x1, y2: y2, stroke: "#0a0908" unless cell.west
+
+            svg.line x1: x2, y1: y1, x2: x2, y2: y2, stroke: "#0a0908" unless cell.linked?(cell.east)
+            svg.line x1: x1, y1: y2, x2: x2, y2: y2, stroke: "#0a0908" unless cell.linked?(cell.south)
+        end
+        svg
+    end
 
 end
